@@ -1,0 +1,79 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+#define MAX_SIZE 5
+
+typedef struct {
+    int *queue;
+    int front, rear;
+    int size;
+} CircularQueue;
+
+void initializeQueue(CircularQueue *cq) {
+    cq->queue = (int *)malloc(MAX_SIZE * sizeof(int));
+    cq->front = cq->rear = -1;
+    cq->size = MAX_SIZE;
+}
+
+int isFull(CircularQueue *cq) {
+    return (cq->rear + 1) % cq->size == cq->front;
+}
+
+int isEmpty(CircularQueue *cq) {
+    return cq->front == -1;
+}
+
+void writeQueue(CircularQueue *cq, int data) {
+    if (isFull(cq)) {
+        cq->front = (cq->front + 1) % cq->size; // Overwrite oldest data
+    } else if (isEmpty(cq)) {
+        cq->front = 0;
+    }
+
+    cq->rear = (cq->rear + 1) % cq->size;
+    cq->queue[cq->rear] = data;
+}
+
+int readQueue(CircularQueue *cq) {
+    int data = -1;
+    if (isEmpty(cq)) {
+        printf("Queue is empty\n");
+    } else {
+        data = cq->queue[cq->front];
+        if (cq->front == cq->rear) {
+            cq->front = cq->rear = -1; // Reset pointers if the queue becomes empty
+        } else {
+            cq->front = (cq->front + 1) % cq->size;
+        }
+    }
+    return data;
+}
+
+void clearQueue(CircularQueue *cq) {
+    free(cq->queue);
+    initializeQueue(cq);
+}
+
+int main() {
+    CircularQueue cq;
+    initializeQueue(&cq);
+
+    writeQueue(&cq, 1);
+    writeQueue(&cq, 2);
+    writeQueue(&cq, 3);
+    writeQueue(&cq, 4);
+    writeQueue(&cq, 5);
+    writeQueue(&cq, 6); // Overwrites oldest data (1)
+
+    printf("Reading from queue:\n");
+    printf("%d\n", readQueue(&cq)); // Reads 2
+    printf("%d\n", readQueue(&cq)); // Reads 3
+
+    printf("Clearing queue...\n");
+    clearQueue(&cq);
+
+    printf("Reading from queue after clearing:\n");
+    printf("%d\n", readQueue(&cq)); // Queue is empty now
+
+    return 0;
+}
